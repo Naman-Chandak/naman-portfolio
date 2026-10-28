@@ -10,7 +10,7 @@
  */
 
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
-const DEFAULT_MODEL = "llama-3.1-8b-instant"; // free tier; override with GROQ_MODEL in Vercel
+const DEFAULT_MODEL = "openai/gpt-oss-20b"; // free tier; override with GROQ_MODEL in Vercel
 const MAX_MESSAGES = 4;     // recent messages sent to the model (keeps the free tier happy)
 const MAX_CHARS = 400;      // per message
 const TIMEOUT_MS = 20000;
