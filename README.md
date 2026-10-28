@@ -2,7 +2,7 @@
 
 A personal portfolio website in a pixel Pokédex style, with a project search and filter, a Day/Night mode and an AI chatbot that answers questions about me and my work.
 
-**Live website:** ADD_PORTFOLIO_LIVE_LINK
+**Live website:** https://naman-portfolio-steel.vercel.app
 **GitHub:** https://github.com/Naman-Chandak
 
 ## About the project
