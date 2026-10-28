@@ -572,7 +572,8 @@
     network: "Wild connection error appeared! The assistant could not be reached. Please try again in a moment.",
     server: "Wild connection error appeared! The assistant had a problem on its side. Please try again in a moment.",
     busy: "Too many questions at once. Wait about a minute and try again.",
-    setup: "The assistant is not set up yet. Naman needs to add the API key in Vercel."
+    setup: "The assistant is not set up yet. Naman needs to add the API key in Vercel.",
+    key: "The assistant's API key was rejected. Naman needs to check the key in Vercel."
   };
 
   function initChat() {
@@ -626,7 +627,7 @@
 
     function showError(kind, retryText) {
       var m = addMessage("error", "Error", ERROR_TEXT[kind] || ERROR_TEXT.network);
-      if (retryText && kind !== "setup") {
+      if (retryText && kind !== "setup" && kind !== "key") {
         var wrap = document.createElement("div");
         wrap.className = "msg__retry";
         var btn = document.createElement("button");
@@ -676,6 +677,7 @@
           }
           var kind = r.status === 429 ? "busy"
             : (r.data && r.data.error === "not_configured") ? "setup"
+            : (r.data && r.data.error === "upstream_error" && (r.data.upstream_status === 401 || r.data.upstream_status === 403)) ? "key"
             : "server";
           showError(kind, question);
           setBusy(false);

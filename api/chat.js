@@ -68,7 +68,9 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: "method_not_allowed" });
   }
 
-  const apiKey = process.env.GROQ_API_KEY;
+  // Trim stray spaces/quotes that are easy to paste into the Vercel box by accident
+  const rawKey = process.env.GROQ_API_KEY;
+  const apiKey = rawKey ? rawKey.trim().replace(/^["']+|["']+$/g, "").trim() : "";
   if (!apiKey) {
     return res.status(500).json({ error: "not_configured" });
   }
@@ -108,10 +110,15 @@ module.exports = async function handler(req, res) {
     });
 
     if (upstream.status === 429) {
+      console.error("Groq rate limit (429)");
       return res.status(429).json({ error: "rate_limited" });
     }
     if (!upstream.ok) {
-      return res.status(502).json({ error: "upstream_error" });
+      // Logged in Vercel > Logs so the real reason can be found. The key is never logged.
+      let detail = "";
+      try { detail = (await upstream.text()).slice(0, 300); } catch (e) {}
+      console.error("Groq error", upstream.status, detail);
+      return res.status(502).json({ error: "upstream_error", upstream_status: upstream.status });
     }
 
     const data = await upstream.json();
@@ -121,11 +128,13 @@ module.exports = async function handler(req, res) {
         ? data.choices[0].message.content.trim()
         : "";
     if (!reply) {
+      console.error("Groq returned an empty reply");
       return res.status(502).json({ error: "empty_reply" });
     }
     return res.status(200).json({ reply });
   } catch (err) {
     const timedOut = err && err.name === "AbortError";
+    console.error("Groq request failed:", err && err.name, err && err.message);
     return res.status(timedOut ? 504 : 502).json({ error: timedOut ? "timeout" : "network_error" });
   } finally {
     clearTimeout(timer);
